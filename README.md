@@ -1,7 +1,7 @@
 # 🚀 Launch - MAGI Infrastructure Dashboard
 
 <div align="center">
-  <img src="(https://www.imdb.com/title/tt1167754/mediaviewer/rm1313345536/?ref_=tt_ov_i)" alt="Launch from Dragon Ball" width="300">
+  <img src="C:\Users\JordanEhrig\Documents\GitHub\Launch\imgbin_99b52986a549fb08e3eadfb1016783f3.png" alt="Launch from Dragon Ball" width="300">
   
   **Launch** - Your one-click deployment and monitoring solution for the entire MAGI AI ecosystem
 </div>
