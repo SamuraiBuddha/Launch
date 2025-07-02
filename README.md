@@ -3,8 +3,6 @@
 <div align="center">
   <img src="https://i.imgur.com/7vQD2Zs.png" alt="Launch from Dragon Ball" width="300">
   
-  *"With my genius engineering, I'll make this infrastructure run perfectly!"*
-  
   **Launch** - Your one-click deployment and monitoring solution for the entire MAGI AI ecosystem
 </div>
 
