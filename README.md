@@ -1,14 +1,14 @@
 # 🚀 Launch - MAGI Infrastructure Dashboard
 
 <div align="center">
-  <img src="https://i.imgur.com/7vQD2Zs.png" alt="Launch from Dragon Ball" width="300">
+  <img src="(https://www.imdb.com/title/tt1167754/mediaviewer/rm1313345536/?ref_=tt_ov_i)" alt="Launch from Dragon Ball" width="300">
   
   **Launch** - Your one-click deployment and monitoring solution for the entire MAGI AI ecosystem
 </div>
 
 ## 🎯 Overview
 
-Named after Launch (Bulma's sister) from Dragon Ball - the brilliant engineer who can fix and optimize any technology - this dashboard provides centralized control over your distributed AI infrastructure.
+Named after Launch from Dragon Ball -  this dashboard provides centralized control over your distributed AI infrastructure.
 
 Launch brings together:
 - 🧠 **Hybrid Memory System** (PostgreSQL + pgvector + Apache AGE + Redis + Qdrant)
