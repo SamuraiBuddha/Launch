@@ -1,7 +1,7 @@
 # 🚀 Launch - MAGI Infrastructure Dashboard
 
 <div align="center">
-  <img src="asset/launch.png" alt="Launch from Dragon Ball" width="300">
+  ![Launch](assets/launch.png)
   
   **Launch** - Your one-click deployment and monitoring solution for the entire MAGI AI ecosystem
 </div>
