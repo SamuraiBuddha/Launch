@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced SSH Terminal Grid</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .ssh-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .ssh-header {
+            height: 40px;
+            background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            border-bottom: 1px solid #4CAF50;
+        }
+        
+        .ssh-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .ssh-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            padding: 5px 12px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+        
+        .control-btn.active {
+            background: linear-gradient(45deg, #00BCD4, #0097A7);
+        }
+        
+        .ssh-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Grid View Styles */
+        .terminal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 10px;
+            padding: 10px;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .terminal-card {
+            background: rgba(42, 42, 42, 0.9);
+            border-radius: 8px;
+            border: 2px solid #4CAF50;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .terminal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+            border-color: #00BCD4;
+        }
+        
+        .terminal-card.connected {
+            border-color: #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .terminal-card.disconnected {
+            border-color: #f44336;
+            opacity: 0.7;
+        }
+        
+        .terminal-header {
+            background: linear-gradient(90deg, #4CAF50, #2E7D32);
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .terminal-name {
+            font-size: 12px;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .terminal-status {
+            font-size: 10px;
+            color: #000;
+        }
+        
+        .terminal-body {
+            flex: 1;
+            background: #000;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #4CAF50;
+            overflow-y: auto;
+            min-height: 150px;
+        }
+        
+        .expand-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 188, 212, 0.8);
+            border: none;
+            border-radius: 3px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .terminal-card:hover .expand-btn {
+            opacity: 1;
+        }
+        
+        /* Full Screen View Styles */
+        .full-screen-terminal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .full-screen-terminal.active {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .full-terminal-header {
+            height: 40px;
+            background: linear-gradient(90deg, #4CAF50, #2E7D32);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+        }
+        
+        .full-terminal-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .full-terminal-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .full-terminal-body {
+            flex: 1;
+            background: #000;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #4CAF50;
+            overflow-y: auto;
+        }
+        
+        .machine-selector {
+            display: flex;
+            gap: 5px;
+            margin-right: 15px;
+        }
+        
+        .machine-tab {
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #4CAF50;
+            color: #4CAF50;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s ease;
+        }
+        
+        .machine-tab.active {
+            background: #4CAF50;
+            color: #000;
+        }
+        
+        .command-line {
+            margin-bottom: 5px;
+        }
+        
+        .prompt {
+            color: #00BCD4;
+        }
+        
+        .output {
+            color: #4CAF50;
+        }
+        
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="ssh-container">
+        <div class="ssh-header">
+            <div class="ssh-title">🔗 MAGI SSH Terminal Grid</div>
+            <div class="ssh-controls">
+                <button class="control-btn active" onclick="toggleView('grid')">Grid View</button>
+                <button class="control-btn" onclick="toggleView('split')">Split View</button>
+                <button class="control-btn" onclick="connectAll()">Connect All</button>
+                <button class="control-btn" onclick="disconnectAll()">Disconnect All</button>
+            </div>
+        </div>
+        
+        <div class="ssh-content">
+            <!-- Grid View -->
+            <div class="terminal-grid" id="terminal-grid">
+                <!-- Melchior Terminal -->
+                <div class="terminal-card connected" data-machine="melchior">
+                    <div class="terminal-header">
+                        <div class="terminal-name">Melchior (RTX A5000)</div>
+                        <div class="terminal-status">Connected</div>
+                    </div>
+                    <div class="terminal-body" id="melchior-output">
+                        <div class="command-line"><span class="prompt">jordan@melchior:~$</span> nvidia-smi</div>
+                        <div class="output">+-----------------------------------------------------------------------------+<br>| NVIDIA-SMI 525.78.01    Driver Version: 525.78.01    CUDA Version: 12.0  |<br>|-------------------------------+----------------------+----------------------+<br>| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |<br>| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |<br>|===============================+======================+======================|<br>|   0  NVIDIA RTX A5000    On   | 00000000:01:00.0 Off |                  Off |<br>| 30%   72C    P2   180W / 230W |  15264MiB / 24564MiB |     78%      Default |<br>+-------------------------------+----------------------+----------------------+</div>
+                        <div class="command-line"><span class="prompt">jordan@melchior:~$</span> <span class="cursor">_</span></div>
+                    </div>
+                    <button class="expand-btn" onclick="expandTerminal('melchior')">⛶</button>
+                </div>
+                
+                <!-- Balthasar Terminal -->
+                <div class="terminal-card connected" data-machine="balthasar">
+                    <div class="terminal-header">
+                        <div class="terminal-name">Balthasar (RTX A4000)</div>
+                        <div class="terminal-status">Connected</div>
+                    </div>
+                    <div class="terminal-body" id="balthasar-output">
+                        <div class="command-line"><span class="prompt">jordan@balthasar:~$</span> htop</div>
+                        <div class="output">  PID USER      PRI  NI  VIRT   RES   SHR S CPU% MEM%   TIME+  Command<br> 1234 jordan     20   0 15.2g 12.1g  856m S 87.5 76.2  45:23.67 python3<br> 5678 jordan     20   0  2.1g  1.8g  234m S 12.3  9.8   5:12.34 inference_server<br> 9012 root       20   0  156m   89m   67m S  0.7  0.6   0:45.23 systemd</div>
+                        <div class="command-line"><span class="prompt">jordan@balthasar:~$</span> <span class="cursor">_</span></div>
+                    </div>
+                    <button class="expand-btn" onclick="expandTerminal('balthasar')">⛶</button>
+                </div>
+                
+                <!-- Caspar Terminal -->
+                <div class="terminal-card connected" data-machine="caspar">
+                    <div class="terminal-header">
+                        <div class="terminal-name">Caspar (RTX 3090)</div>
+                        <div class="terminal-status">Connected</div>
+                    </div>
+                    <div class="terminal-body" id="caspar-output">
+                        <div class="command-line"><span class="prompt">jordan@caspar:~$</span> iperf3 -c 192.168.50.30</div>
+                        <div class="output">Connecting to host 192.168.50.30, port 5201<br>[ ID] Interval           Transfer     Bitrate<br>[  5]   0.00-1.00   sec  1.12 GBytes  9.61 Gbits/sec<br>[  5]   1.00-2.00   sec  1.13 GBytes  9.68 Gbits/sec<br>[  5]   2.00-3.00   sec  1.12 GBytes  9.59 Gbits/sec<br>- - - - - - - - - - - - - - - - - - - - - - - - -<br>[ ID] Interval           Transfer     Bitrate<br>[  5]   0.00-3.00   sec  3.37 GBytes  9.63 Gbits/sec                  sender</div>
+                        <div class="command-line"><span class="prompt">jordan@caspar:~$</span> <span class="cursor">_</span></div>
+                    </div>
+                    <button class="expand-btn" onclick="expandTerminal('caspar')">⛶</button>
+                </div>
+                
+                <!-- Adam Terminal -->
+                <div class="terminal-card disconnected" data-machine="adam">
+                    <div class="terminal-header">
+                        <div class="terminal-name">Adam (NAS)</div>
+                        <div class="terminal-status">Disconnected</div>
+                    </div>
+                    <div class="terminal-body" id="adam-output">
+                        <div class="error">Connection timeout: ssh: connect to host 192.168.50.40 port 22: Connection timed out</div>
+                        <div class="command-line"><span class="prompt">Retrying connection...</span></div>
+                    </div>
+                    <button class="expand-btn" onclick="expandTerminal('adam')">⛶</button>
+                </div>
+
+                <!-- Lilith Terminal -->
+                <div class="terminal-card connected" data-machine="lilith">
+                    <div class="terminal-header">
+                        <div class="terminal-name">Lilith (Secondary NAS)</div>
+                        <div class="terminal-status">Connected</div>
+                    </div>
+                    <div class="terminal-body" id="lilith-output">
+                        <div class="command-line"><span class="prompt">jordan@lilith:~$</span> zpool status</div>
+                        <div class="output">  pool: storage<br> state: ONLINE<br>  scan: scrub repaired 0B in 12:34:56 with 0 errors<br><br>config:<br>        NAME        STATE     READ WRITE CKSUM<br>        storage     ONLINE       0     0     0<br>          raidz3-0  ONLINE       0     0     0<br>            sda     ONLINE       0     0     0<br>            sdb     ONLINE       0     0     0<br>            sdc     ONLINE       0     0     0</div>
+                        <div class="command-line"><span class="prompt">jordan@lilith:~$</span> <span class="cursor">_</span></div>
+                    </div>
+                    <button class="expand-btn" onclick="expandTerminal('lilith')">⛶</button>
+                </div>
+            </div>
+            
+            <!-- Full Screen Terminal -->
+            <div class="full-screen-terminal" id="full-screen-terminal">
+                <div class="full-terminal-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="full-terminal-title" id="full-terminal-title">Melchior (RTX A5000) - Full Terminal</div>
+                        <div class="machine-selector">
+                            <div class="machine-tab active" onclick="switchFullTerminal('melchior')">Melchior</div>
+                            <div class="machine-tab" onclick="switchFullTerminal('balthasar')">Balthasar</div>
+                            <div class="machine-tab" onclick="switchFullTerminal('caspar')">Caspar</div>
+                            <div class="machine-tab" onclick="switchFullTerminal('adam')">Adam</div>
+                            <div class="machine-tab" onclick="switchFullTerminal('lilith')">Lilith</div>
+                        </div>
+                    </div>
+                    <div class="full-terminal-controls">
+                        <button class="control-btn" onclick="newTab()">New Tab</button>
+                        <button class="control-btn" onclick="splitPane()">Split</button>
+                        <button class="control-btn" onclick="closeFullTerminal()">⊞ Grid View</button>
+                    </div>
+                </div>
+                <div class="full-terminal-body" id="full-terminal-body">
+                    <!-- Full terminal content will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentFullTerminal = 'melchior';
+        let terminals = {
+            melchior: {
+                name: 'Melchior (RTX A5000)',
+                status: 'connected',
+                history: [
+                    'jordan@melchior:~$ nvidia-smi',
+                    '+-----------------------------------------------------------------------------+',
+                    '| NVIDIA-SMI 525.78.01    Driver Version: 525.78.01    CUDA Version: 12.0  |',
+                    '|-------------------------------+----------------------+----------------------+',
+                    '| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |',
+                    '| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |',
+                    '|===============================+======================+======================|',
+                    '|   0  NVIDIA RTX A5000    On   | 00000000:01:00.0 Off |                  Off |',
+                    '| 30%   72C    P2   180W / 230W |  15264MiB / 24564MiB |     78%      Default |',
+                    '+-------------------------------+----------------------+----------------------+',
+                    'jordan@melchior:~$ cpuz -txt',
+                    'CPU-Z 2.06 Report',
+                    'Processor: AMD EPYC 7713 64-Core Processor',
+                    'Cores: 64 cores, 128 threads',
+                    'Base Clock: 2.0 GHz, Boost: 3.675 GHz',
+                    'L3 Cache: 256 MB',
+                    'jordan@melchior:~$ '
+                ]
+            },
+            balthasar: {
+                name: 'Balthasar (RTX A4000)',
+                status: 'connected',
+                history: [
+                    'jordan@balthasar:~$ aida64 --report-cpu',
+                    'AIDA64 System Information Report',
+                    'CPU Type: Intel Core i9-13900K',
+                    'CPU Speed: 3.0 GHz (5.8 GHz Turbo)',
+                    'Cores: 24 cores (8P + 16E), 32 threads',
+                    'L3 Cache: 36 MB',
+                    'TDP: 125W (253W Turbo)',
+                    'jordan@balthasar:~$ nvidia-ml-py --query-gpu',
+                    'GPU 0: NVIDIA RTX A4000',
+                    'Temperature: 78°C',
+                    'Power Draw: 140W / 200W',
+                    'Memory: 12.1GB / 16GB',
+                    'GPU Utilization: 76%',
+                    'jordan@balthasar:~$ '
+                ]
+            },
+            caspar: {
+                name: 'Caspar (RTX 3090)',
+                status: 'connected', 
+                history: [
+                    'jordan@caspar:~$ gpu-z --log',
+                    'GPU-Z v2.55.0 - Logging Started',
+                    'Graphics Card: NVIDIA GeForce RTX 3090',
+                    'GPU Clock: 1695 MHz',
+                    'Memory Clock: 9751 MHz (19502 MHz effective)',
+                    'Memory Size: 24576 MB',
+                    'Memory Type: GDDR6X',
+                    'Bus Width: 384-bit',
+                    'Bandwidth: 936.2 GB/s',
+                    'Temperature: 69°C',
+                    'Power Consumption: 220W / 350W',
+                    'Load: 77%',
+                    'jordan@caspar:~$ '
+                ]
+            },
+            adam: {
+                name: 'Adam (NAS)',
+                status: 'disconnected',
+                history: [
+                    'ssh: connect to host 192.168.50.40 port 22: Connection timed out',
+                    'Retrying connection...'
+                ]
+            },
+            lilith: {
+                name: 'Lilith (Secondary NAS)',
+                status: 'connected',
+                history: [
+                    'jordan@lilith:~$ zpool status',
+                    '  pool: storage',
+                    ' state: ONLINE',
+                    '  scan: scrub repaired 0B in 12:34:56 with 0 errors',
+                    '',
+                    'config:',
+                    '        NAME        STATE     READ WRITE CKSUM',
+                    '        storage     ONLINE       0     0     0',
+                    '          raidz3-0  ONLINE       0     0     0',
+                    '            sda     ONLINE       0     0     0',
+                    '            sdb     ONLINE       0     0     0',
+                    '            sdc     ONLINE       0     0     0',
+                    'jordan@lilith:~$ df -h',
+                    'Filesystem      Size  Used Avail Use% Mounted on',
+                    '/dev/sda1        96T   45T   48T  49% /storage',
+                    'jordan@lilith:~$ '
+                ]
+            }
+        };
+        
+        function expandTerminal(machine) {
+            currentFullTerminal = machine;
+            document.getElementById('terminal-grid').style.display = 'none';
+            document.getElementById('full-screen-terminal').classList.add('active');
+            updateFullTerminal();
+        }
+        
+        function closeFullTerminal() {
+            document.getElementById('terminal-grid').style.display = 'grid';
+            document.getElementById('full-screen-terminal').classList.remove('active');
+        }
+        
+        function switchFullTerminal(machine) {
+            currentFullTerminal = machine;
+            
+            // Update active tab
+            document.querySelectorAll('.machine-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateFullTerminal();
+        }
+        
+        function updateFullTerminal() {
+            const terminal = terminals[currentFullTerminal];
+            document.getElementById('full-terminal-title').textContent = terminal.name + ' - Full Terminal';
+            
+            const body = document.getElementById('full-terminal-body');
+            body.innerHTML = terminal.history.map(line => {
+                if (line.includes('$')) {
+                    return `<div class="command-line"><span class="prompt">${line}</span></div>`;
+                } else if (line.includes('error') || line.includes('timeout')) {
+                    return `<div class="error">${line}</div>`;
+                } else {
+                    return `<div class="output">${line}</div>`;
+                }
+            }).join('');
+            
+            // Auto-scroll to bottom
+            body.scrollTop = body.scrollHeight;
+        }
+        
+        function toggleView(view) {
+            // Update active button
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            if (view === 'grid') {
+                document.querySelector('.terminal-grid').style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
+            } else if (view === 'split') {
+                document.querySelector('.terminal-grid').style.gridTemplateColumns = '1fr 1fr';
+            }
+        }
+        
+        function connectAll() {
+            document.querySelectorAll('.terminal-card').forEach(card => {
+                card.classList.remove('disconnected');
+                card.classList.add('connected');
+                card.querySelector('.terminal-status').textContent = 'Connected';
+            });
+        }
+        
+        function disconnectAll() {
+            document.querySelectorAll('.terminal-card').forEach(card => {
+                card.classList.remove('connected');
+                card.classList.add('disconnected');
+                card.querySelector('.terminal-status').textContent = 'Disconnected';
+            });
+        }
+        
+        function newTab() {
+            alert('New Tab functionality would create additional terminal session');
+        }
+        
+        function splitPane() {
+            alert('Split Pane would divide the full terminal into multiple panes');
+        }
+        
+        // Initialize with some activity
+        setInterval(() => {
+            // Simulate terminal activity
+            const cards = document.querySelectorAll('.terminal-card.connected');
+            cards.forEach(card => {
+                const cursor = card.querySelector('.cursor');
+                if (cursor) {
+                    cursor.style.opacity = cursor.style.opacity === '0' ? '1' : '0';
+                }
+            });
+        }, 1000);
+
+        // Integration with Electron IPC (when available)
+        if (typeof window !== 'undefined' && window.ipcRenderer) {
+            // Listen for real-time updates from performance integration
+            window.ipcRenderer.on('metrics-update', (event, data) => {
+                updateTerminalWithMetrics(data.machine, data.data);
+            });
+
+            window.ipcRenderer.on('ssh-output', (event, data) => {
+                appendToTerminal(data.machine, data.output);
+            });
+        }
+
+        function updateTerminalWithMetrics(machineName, metrics) {
+            // Update terminal with live metrics data
+            const terminal = terminals[machineName.toLowerCase()];
+            if (terminal && metrics) {
+                // Add live metrics to terminal history
+                const metricsLine = `[METRICS] CPU: ${metrics.cpu?.usage}% GPU: ${metrics.gpu?.temperature}°C MEM: ${metrics.memory?.usage_percent}%`;
+                terminal.history.push(metricsLine);
+                
+                // Keep history manageable
+                if (terminal.history.length > 50) {
+                    terminal.history.splice(0, terminal.history.length - 50);
+                }
+                
+                // Update display if this terminal is currently shown
+                if (currentFullTerminal === machineName.toLowerCase()) {
+                    updateFullTerminal();
+                }
+            }
+        }
+
+        function appendToTerminal(machineName, output) {
+            const terminal = terminals[machineName.toLowerCase()];
+            if (terminal) {
+                terminal.history.push(output);
+                
+                // Update display if this terminal is currently shown
+                if (currentFullTerminal === machineName.toLowerCase()) {
+                    updateFullTerminal();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
