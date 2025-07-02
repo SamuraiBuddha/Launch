@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAGI Command Center</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            user-select: none;
+        }
+        
+        /* Custom Winamp-style titlebar */
+        .titlebar {
+            height: 30px;
+            background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            -webkit-app-region: drag;
+            border-bottom: 1px solid #4CAF50;
+        }
+        
+        .titlebar-text {
+            font-size: 12px;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .titlebar-controls {
+            display: flex;
+            gap: 5px;
+            -webkit-app-region: no-drag;
+        }
+        
+        .titlebar-btn {
+            width: 16px;
+            height: 16px;
+            border: 1px solid #000;
+            background: #ccc;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #000;
+        }
+        
+        .titlebar-btn:hover {
+            background: #fff;
+        }
+        
+        .main-container {
+            display: grid;
+            grid-template-columns: 250px 1fr 200px;
+            grid-template-rows: 1fr;
+            height: calc(100vh - 30px);
+            gap: 10px;
+            padding: 10px;
+        }
+        
+        .sidebar-left {
+            background: rgba(42, 42, 42, 0.9);
+            border-radius: 8px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .center-panel {
+            background: rgba(42, 42, 42, 0.9);
+            border-radius: 8px;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+        
+        .sidebar-right {
+            background: rgba(42, 42, 42, 0.9);
+            border-radius: 8px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Center Panel Mode Toggle */
+        .center-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .mode-btn {
+            padding: 8px 16px;
+            border: 2px solid #4CAF50;
+            background: transparent;
+            color: #4CAF50;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .mode-btn.active {
+            background: #4CAF50;
+            color: #000;
+        }
+        
+        .mode-btn:hover {
+            background: rgba(76, 175, 80, 0.2);
+        }
+        
+        /* SSH Machine Buttons */
+        .ssh-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .ssh-btn {
+            padding: 6px 12px;
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .ssh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+        
+        /* Content Areas */
+        .center-content {
+            height: calc(100% - 70px);
+            position: relative;
+        }
+        
+        .graph-view {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .terminal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 5px;
+            height: 100%;
+            padding: 10px;
+        }
+        
+        .terminal-window {
+            background: #000;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+        
+        .terminal-header {
+            color: #4CAF50;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        /* System Status */
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+        }
+        
+        .status-value {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .online { background: #4CAF50; color: white; }
+        .warning { background: #FF9800; color: white; }
+        .offline { background: #f44336; color: white; }
+        
+        /* Quick Actions */
+        .quick-action {
+            width: 100%;
+            margin: 8px 0;
+            padding: 10px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+        
+        .quick-action.danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+        
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Graph visualization */
+        #graph-container {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .graph-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #4CAF50;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(76, 175, 80, 0.3);
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Winamp-style Titlebar -->
+    <div class="titlebar">
+        <div class="titlebar-text">🚀 MAGI Command Center v1.0</div>
+        <div class="titlebar-controls">
+            <div class="titlebar-btn" id="minimize-btn">_</div>
+            <div class="titlebar-btn" id="maximize-btn">□</div>
+            <div class="titlebar-btn" id="close-btn">×</div>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <!-- Left Sidebar - System Status -->
+        <div class="sidebar-left">
+            <h3 style="color: #4CAF50; margin-bottom: 15px;">🖥️ System Status</h3>
+            
+            <div class="status-item">
+                <span>Melchior (A5000)</span>
+                <span class="status-value online" id="melchior-status">72°C</span>
+            </div>
+            
+            <div class="status-item">
+                <span>Balthazar (A4000)</span>
+                <span class="status-value warning" id="balthazar-status">78°C</span>
+            </div>
+            
+            <div class="status-item">
+                <span>Caspar (3090)</span>
+                <span class="status-value online" id="caspar-status">69°C</span>
+            </div>
+            
+            <div class="status-item">
+                <span>AGE Database</span>
+                <span class="status-value online" id="db-status">ONLINE</span>
+            </div>
+            
+            <div class="status-item">
+                <span>Memory System</span>
+                <span class="status-value online" id="memory-status">847K</span>
+            </div>
+            
+            <h3 style="color: #4CAF50; margin: 20px 0 15px 0;">⚡ Performance</h3>
+            
+            <div class="status-item">
+                <span>Inference/sec</span>
+                <span class="status-value online" id="inference-rate">127</span>
+            </div>
+            
+            <div class="status-item">
+                <span>Amplification</span>
+                <span class="status-value online" id="amplification">847x</span>
+            </div>
+            
+            <div class="status-item">
+                <span>Response Time</span>
+                <span class="status-value online" id="response-time">2.3s</span>
+            </div>
+        </div>
+        
+        <!-- Center Panel - Graph/Terminal Switch -->
+        <div class="center-panel">
+            <div class="center-header">
+                <div class="mode-toggle">
+                    <button class="mode-btn active" id="graph-mode-btn">🧠 Knowledge Graph</button>
+                    <button class="mode-btn" id="terminal-mode-btn">💻 SSH Terminals</button>
+                </div>
+                
+                <div class="ssh-buttons" id="ssh-buttons" style="display: none;">
+                    <button class="ssh-btn" data-machine="melchior">Melchior</button>
+                    <button class="ssh-btn" data-machine="balthazar">Balthazar</button>
+                    <button class="ssh-btn" data-machine="caspar">Caspar</button>
+                    <button class="ssh-btn" data-machine="adam">Adam</button>
+                    <button class="ssh-btn" data-machine="lilith">Lilith</button>
+                </div>
+            </div>
+            
+            <div class="center-content">
+                <!-- Graph View -->
+                <div class="graph-view" id="graph-view">
+                    <div class="graph-loading">
+                        <div class="spinner"></div>
+                        <h3>Loading AGE Knowledge Graph...</h3>
+                        <p>Connecting to Apache AGE database</p>
+                    </div>
+                    <div id="graph-container"></div>
+                </div>
+                
+                <!-- Terminal Grid -->
+                <div class="terminal-grid hidden" id="terminal-view">
+                    <div class="terminal-window">
+                        <div class="terminal-header">🥷 Melchior (RTX A5000)</div>
+                        <div id="melchior-terminal">Connecting to 192.168.50.30...</div>
+                    </div>
+                    <div class="terminal-window">
+                        <div class="terminal-header">⚡ Balthazar (RTX A4000)</div>
+                        <div id="balthazar-terminal">Connecting to 192.168.50.20...</div>
+                    </div>
+                    <div class="terminal-window">
+                        <div class="terminal-header">🔮 Caspar (RTX 3090)</div>
+                        <div id="caspar-terminal">Connecting to 192.168.50.21...</div>
+                    </div>
+                    <div class="terminal-window">
+                        <div class="terminal-header">💾 Adam (Business)</div>
+                        <div id="adam-terminal">Connecting to 192.168.50.11...</div>
+                    </div>
+                    <div class="terminal-window">
+                        <div class="terminal-header">🧠 Lilith (Primary AI/Dev)</div>
+                        <div id="lilith-terminal">Connecting to 192.168.50.10...</div>
+                    </div>
+                    <div class="terminal-window">
+                        <div class="terminal-header">🖥️ Local Terminal</div>
+                        <div id="local-terminal">jordan@magi-command:~$ </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Sidebar - Quick Actions -->
+        <div class="sidebar-right">
+            <h3 style="color: #4CAF50; margin-bottom: 15px;">🚀 Quick Actions</h3>
+            
+            <button class="quick-action">Deploy Models</button>
+            <button class="quick-action">Restart Services</button>
+            <button class="quick-action">Sync Memory</button>
+            <button class="quick-action">Health Check</button>
+            <button class="quick-action danger">Emergency Stop</button>
+            
+            <h3 style="color: #4CAF50; margin: 20px 0 15px 0;">🔧 Tools</h3>
+            
+            <button class="quick-action" id="open-performance">Performance Monitor</button>
+            <button class="quick-action" id="open-logs">Live Logs</button>
+            <button class="quick-action" id="open-network">Network Topology</button>
+            <button class="quick-action" id="refresh-graph">Refresh Graph</button>
+        </div>
+    </div>
+    
+    <script src="renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAGI Skin Selector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            user-select: none;
+        }
+        
+        .skin-titlebar {
+            height: 25px;
+            background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 8px;
+            -webkit-app-region: drag;
+            border-bottom: 1px solid #4CAF50;
+        }
+        
+        .skin-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .skin-controls {
+            display: flex;
+            gap: 3px;
+            -webkit-app-region: no-drag;
+        }
+        
+        .skin-btn {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #000;
+            background: #ccc;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #000;
+        }
+        
+        .skin-btn:hover {
+            background: #fff;
+        }
+        
+        .skin-content {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            height: calc(100vh - 25px);
+        }
+        
+        .skin-sidebar {
+            background: rgba(42, 42, 42, 0.9);
+            padding: 15px;
+            border-right: 2px solid #4CAF50;
+        }
+        
+        .skin-category {
+            margin-bottom: 20px;
+        }
+        
+        .category-title {
+            color: #4CAF50;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .category-item {
+            padding: 8px 12px;
+            margin: 2px 0;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .category-item:hover {
+            background: rgba(76, 175, 80, 0.2);
+            border-left-color: #4CAF50;
+        }
+        
+        .category-item.active {
+            background: rgba(76, 175, 80, 0.3);
+            border-left-color: #4CAF50;
+            color: #4CAF50;
+        }
+        
+        .skin-gallery {
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .gallery-title {
+            font-size: 18px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .gallery-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+        
+        .action-btn.secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+        
+        .skin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .skin-card {
+            background: rgba(42, 42, 42, 0.9);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .skin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+            border-color: #4CAF50;
+        }
+        
+        .skin-card.applied {
+            border-color: #00BCD4;
+            box-shadow: 0 0 20px rgba(0, 188, 212, 0.5);
+        }
+        
+        .skin-preview {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(45deg, #333, #555);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .skin-preview-content {
+            width: 80%;
+            height: 70%;
+            border-radius: 4px;
+            position: relative;
+            transform: scale(0.7);
+        }
+        
+        .preview-titlebar {
+            height: 15px;
+            border-radius: 2px 2px 0 0;
+            margin-bottom: 2px;
+        }
+        
+        .preview-body {
+            height: calc(100% - 17px);
+            border-radius: 0 0 2px 2px;
+            opacity: 0.8;
+        }
+        
+        .skin-info {
+            padding: 15px;
+        }
+        
+        .skin-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ffffff;
+        }
+        
+        .skin-author {
+            font-size: 11px;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+        
+        .skin-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .skin-tag {
+            padding: 2px 6px;
+            background: rgba(76, 175, 80, 0.2);
+            border-radius: 10px;
+            font-size: 9px;
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(76, 175, 80, 0.3);
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .skin-details-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: rgba(42, 42, 42, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid #4CAF50;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .skin-preview-large {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="skin-titlebar">
+        <div class="skin-title">🎨 MAGI Skin Selector</div>
+        <div class="skin-controls">
+            <div class="skin-btn" onclick="window.close()">×</div>
+        </div>
+    </div>
+    
+    <div class="skin-content">
+        <!-- Sidebar Categories -->
+        <div class="skin-sidebar">
+            <div class="skin-category">
+                <div class="category-title">Built-in</div>
+                <div class="category-item active" data-category="builtin">Default Skins</div>
+                <div class="category-item" data-category="magi">MAGI Collection</div>
+            </div>
+            
+            <div class="skin-category">
+                <div class="category-title">Webamp.org</div>
+                <div class="category-item" data-category="cyberpunk">Cyberpunk</div>
+                <div class="category-item" data-category="matrix">Matrix/Hacker</div>
+                <div class="category-item" data-category="retro">Retro Computing</div>
+                <div class="category-item" data-category="scifi">Sci-Fi</div>
+                <div class="category-item" data-category="military">Military/HUD</div>
+                <div class="category-item" data-category="minimal">Minimal</div>
+            </div>
+            
+            <div class="skin-category">
+                <div class="category-title">Custom</div>
+                <div class="category-item" data-category="imported">Imported Skins</div>
+                <div class="category-item" data-category="community">Community</div>
+            </div>
+        </div>
+        
+        <!-- Main Gallery -->
+        <div class="skin-gallery">
+            <div class="gallery-header">
+                <div class="gallery-title" id="gallery-title">Built-in Skins</div>
+                <div class="gallery-actions">
+                    <button class="action-btn secondary" onclick="importSkin()">📁 Import Skin</button>
+                    <button class="action-btn secondary" onclick="downloadFromUrl()">🌐 Download URL</button>
+                    <button class="action-btn" onclick="refreshGallery()">🔄 Refresh</button>
+                </div>
+            </div>
+            
+            <div class="skin-grid" id="skin-grid">
+                <!-- Skins will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Skin Details Modal -->
+    <div class="skin-details-modal" id="skin-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-skin-name">Skin Name</div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <div class="skin-preview-large" id="modal-preview">
+                <!-- Large preview -->
+            </div>
+            
+            <div id="modal-skin-info">
+                <!-- Skin details -->
+            </div>
+            
+            <div class="modal-actions">
+                <button class="action-btn" onclick="applySkinFromModal()">🎨 Apply Skin</button>
+                <button class="action-btn secondary" onclick="downloadSkinFromModal()">💾 Download</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        let currentCategory = 'builtin';
+        let currentSkins = [];
+        let selectedSkinData = null;
+        
+        // Built-in skin collection
+        const builtinSkins = [
+            {
+                name: 'MAGI Classic',
+                author: 'Jordan Ehrig',
+                category: 'builtin',
+                colors: { primary: '#4CAF50', secondary: '#2E7D32', accent: '#00BCD4' },
+                tags: ['default', 'green', 'magi']
+            },
+            {
+                name: 'Matrix Digital',
+                author: 'Neo',
+                category: 'builtin',
+                colors: { primary: '#00ff41', secondary: '#008f11', accent: '#00ff88' },
+                tags: ['matrix', 'green', 'hacker']
+            },
+            {
+                name: 'Cyberpunk Neon',
+                author: 'Ghost in Shell',
+                category: 'builtin',
+                colors: { primary: '#ff0080', secondary: '#8000ff', accent: '#00ffff' },
+                tags: ['cyberpunk', 'neon', 'pink']
+            },
+            {
+                name: 'Terminal Amber',
+                author: 'Retro Computing',
+                category: 'builtin',
+                colors: { primary: '#ffaa00', secondary: '#cc7700', accent: '#ffcc44' },
+                tags: ['retro', 'amber', 'terminal']
+            },
+            {
+                name: 'Military HUD',
+                author: 'Tactical Systems',
+                category: 'builtin',
+                colors: { primary: '#00cc00', secondary: '#008800', accent: '#44ff44' },
+                tags: ['military', 'hud', 'tactical']
+            },
+            {
+                name: 'Deep Space Blue',
+                author: 'Space Command',
+                category: 'builtin',
+                colors: { primary: '#0088ff', secondary: '#0044cc', accent: '#44aaff' },
+                tags: ['space', 'blue', 'cosmic']
+            }
+        ];
+        
+        function initializeSkinSelector() {
+            loadSkins(currentCategory);
+            setupEventListeners();
+        }
+        
+        function setupEventListeners() {
+            // Category selection
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    // Update active category
+                    document.querySelectorAll('.category-item').forEach(i => i.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    currentCategory = e.target.dataset.category;
+                    loadSkins(currentCategory);
+                });
+            });
+            
+            // Close modal on background click
+            document.getElementById('skin-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'skin-modal') {
+                    closeModal();
+                }
+            });
+        }
+        
+        function loadSkins(category) {
+            const grid = document.getElementById('skin-grid');
+            const title = document.getElementById('gallery-title');
+            
+            // Show loading
+            grid.innerHTML = '<div class="loading-spinner"></div>';
+            
+            setTimeout(() => {
+                let skins = [];
+                
+                switch(category) {
+                    case 'builtin':
+                    case 'magi':
+                        skins = builtinSkins;
+                        title.textContent = 'Built-in Skins';
+                        break;
+                    case 'cyberpunk':
+                        skins = generateMockSkins('cyberpunk');
+                        title.textContent = 'Cyberpunk Skins';
+                        break;
+                    case 'matrix':
+                        skins = generateMockSkins('matrix');
+                        title.textContent = 'Matrix/Hacker Skins';
+                        break;
+                    case 'retro':
+                        skins = generateMockSkins('retro');
+                        title.textContent = 'Retro Computing Skins';
+                        break;
+                    default:
+                        skins = generateMockSkins(category);
+                        title.textContent = `${category.charAt(0).toUpperCase() + category.slice(1)} Skins`;
+                }
+                
+                currentSkins = skins;
+                renderSkins(skins);
+            }, 500);
+        }
+        
+        function generateMockSkins(category) {
+            const mockSkins = [];
+            const categoryData = {
+                cyberpunk: { 
+                    prefix: 'Cyber', 
+                    colors: [
+                        { primary: '#ff0080', secondary: '#8000ff', accent: '#00ffff' },
+                        { primary: '#ff4400', secondary: '#cc2200', accent: '#ffaa00' },
+                        { primary: '#8800ff', secondary: '#4400cc', accent: '#aa44ff' }
+                    ]
+                },
+                matrix: { 
+                    prefix: 'Matrix', 
+                    colors: [
+                        { primary: '#00ff41', secondary: '#008f11', accent: '#00ff88' },
+                        { primary: '#00cc33', secondary: '#006622', accent: '#44ff66' },
+                        { primary: '#22ff22', secondary: '#11cc11', accent: '#66ff66' }
+                    ]
+                },
+                retro: { 
+                    prefix: 'Retro', 
+                    colors: [
+                        { primary: '#ffaa00', secondary: '#cc7700', accent: '#ffcc44' },
+                        { primary: '#00aaff', secondary: '#0077cc', accent: '#44ccff' },
+                        { primary: '#ff6600', secondary: '#cc4400', accent: '#ff9944' }
+                    ]
+                }
+            };
+            
+            const data = categoryData[category] || categoryData.cyberpunk;
+            
+            for (let i = 0; i < 6; i++) {
+                mockSkins.push({
+                    name: `${data.prefix} ${['Neon', 'Digital', 'Terminal', 'Grid', 'Circuit', 'Plasma'][i]}`,
+                    author: ['NeoStyle', 'CyberDev', 'RetroMaster', 'PixelArt', 'CodeMatrix', 'StyleHacker'][i],
+                    category: category,
+                    colors: data.colors[i % data.colors.length],
+                    tags: [category, 'webamp', 'community'],
+                    downloadUrl: `https://skins.webamp.org/${category}/${i}.wsz`
+                });
+            }
+            
+            return mockSkins;
+        }
+        
+        function renderSkins(skins) {
+            const grid = document.getElementById('skin-grid');
+            
+            grid.innerHTML = skins.map(skin => `
+                <div class="skin-card" onclick="showSkinDetails('${skin.name}')">
+                    <div class="skin-preview">
+                        <div class="skin-preview-content">
+                            <div class="preview-titlebar" style="background: linear-gradient(to right, ${skin.colors.primary}, ${skin.colors.secondary})"></div>
+                            <div class="preview-body" style="background: linear-gradient(135deg, ${skin.colors.secondary}, #000)"></div>
+                        </div>
+                    </div>
+                    <div class="skin-info">
+                        <div class="skin-name">${skin.name}</div>
+                        <div class="skin-author">by ${skin.author}</div>
+                        <div class="skin-tags">
+                            ${skin.tags.map(tag => `<span class="skin-tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function showSkinDetails(skinName) {
+            const skin = currentSkins.find(s => s.name === skinName);
+            if (!skin) return;
+            
+            selectedSkinData = skin;
+            
+            // Update modal content
+            document.getElementById('modal-skin-name').textContent = skin.name;
+            document.getElementById('modal-preview').innerHTML = `
+                <div style="width: 80%; height: 80%; background: linear-gradient(135deg, ${skin.colors.primary}, ${skin.colors.secondary}); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                    ${skin.name} Preview
+                </div>
+            `;
+            document.getElementById('modal-skin-info').innerHTML = `
+                <p><strong>Author:</strong> ${skin.author}</p>
+                <p><strong>Category:</strong> ${skin.category}</p>
+                <p><strong>Colors:</strong> ${skin.colors.primary} • ${skin.colors.secondary} • ${skin.colors.accent}</p>
+                <p><strong>Tags:</strong> ${skin.tags.join(', ')}</p>
+                ${skin.downloadUrl ? `<p><strong>Source:</strong> <a href="${skin.downloadUrl}" style="color: #4CAF50;">${skin.downloadUrl}</a></p>` : ''}
+            `;
+            
+            // Show modal
+            document.getElementById('skin-modal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('skin-modal').style.display = 'none';
+            selectedSkinData = null;
+        }
+        
+        async function applySkinFromModal() {
+            if (!selectedSkinData) return;
+            
+            try {
+                // Generate CSS for the skin
+                const skinCSS = generateSkinCSS(selectedSkinData);
+                
+                // Apply skin via IPC
+                await ipcRenderer.invoke('skin-apply', {
+                    name: selectedSkinData.name,
+                    css: skinCSS,
+                    colors: selectedSkinData.colors
+                });
+                
+                // Visual feedback
+                alert(`Applied skin: ${selectedSkinData.name}`);
+                closeModal();
+                
+                // Mark as applied in grid
+                document.querySelectorAll('.skin-card').forEach(card => card.classList.remove('applied'));
+                event.target.closest('.skin-card')?.classList.add('applied');
+                
+            } catch (error) {
+                alert(`Failed to apply skin: ${error.message}`);
+            }
+        }
+        
+        function generateSkinCSS(skin) {
+            const { colors } = skin;
+            return `
+                :root {
+                    --skin-primary: ${colors.primary};
+                    --skin-secondary: ${colors.secondary};
+                    --skin-accent: ${colors.accent};
+                    --skin-gradient-primary: linear-gradient(135deg, ${colors.primary}, ${colors.secondary});
+                }
+                
+                .titlebar, .module-titlebar, .skin-titlebar {
+                    background: var(--skin-gradient-primary) !important;
+                }
+                
+                .status-card, .control-panel, .sidebar-left, .sidebar-right, .center-panel {
+                    border-color: var(--skin-primary) !important;
+                }
+                
+                .metric-value.online, .status-value.online, .mode-btn.active {
+                    background: var(--skin-primary) !important;
+                }
+                
+                .control-btn, .quick-action {
+                    background: var(--skin-gradient-primary) !important;
+                }
+                
+                .ssh-btn, .action-btn {
+                    background: linear-gradient(45deg, var(--skin-accent), var(--skin-secondary)) !important;
+                }
+            `;
+        }
+        
+        async function downloadSkinFromModal() {
+            if (!selectedSkinData?.downloadUrl) {
+                alert('No download URL available for this skin');
+                return;
+            }
+            
+            try {
+                await ipcRenderer.invoke('skin-download', selectedSkinData.downloadUrl);
+                alert(`Downloaded skin: ${selectedSkinData.name}`);
+            } catch (error) {
+                alert(`Failed to download skin: ${error.message}`);
+            }
+        }
+        
+        function importSkin() {
+            // Trigger file dialog for .wsz files
+            alert('Import skin functionality would open file dialog for .wsz files');
+        }
+        
+        function downloadFromUrl() {
+            const url = prompt('Enter skin URL (from skins.webamp.org):');
+            if (url) {
+                downloadSkinFromModal({ downloadUrl: url });
+            }
+        }
+        
+        function refreshGallery() {
+            loadSkins(currentCategory);
+        }
+        
+        // Initialize when DOM loads
+        document.addEventListener('DOMContentLoaded', initializeSkinSelector);
+    </script>
+</body>
+</html>

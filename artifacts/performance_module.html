@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Metrics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            user-select: none;
+        }
+        
+        /* Winamp-style module titlebar */
+        .module-titlebar {
+            height: 25px;
+            background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 8px;
+            -webkit-app-region: drag;
+            border-bottom: 1px solid #4CAF50;
+        }
+        
+        .module-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .module-controls {
+            display: flex;
+            gap: 3px;
+            -webkit-app-region: no-drag;
+        }
+        
+        .module-btn {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #000;
+            background: #ccc;
+            font-size: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #000;
+        }
+        
+        .module-btn:hover {
+            background: #fff;
+        }
+        
+        .module-content {
+            padding: 15px;
+            height: calc(100vh - 25px);
+            overflow-y: auto;
+        }
+        
+        .metric-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-card {
+            background: rgba(0,0,0,0.4);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #4CAF50;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: #ccc;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .chart-container {
+            background: rgba(0,0,0,0.4);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #4CAF50;
+            margin-bottom: 15px;
+        }
+        
+        .chart-title {
+            color: #4CAF50;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .performance-chart {
+            width: 100%;
+            height: 120px;
+            background: #000;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gpu-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .gpu-name {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .gpu-metrics {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .temp-high {
+            color: #FF9800;
+        }
+        
+        .temp-critical {
+            color: #f44336;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #00BCD4);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="module-titlebar">
+        <div class="module-title">📊 Performance Metrics</div>
+        <div class="module-controls">
+            <div class="module-btn" onclick="window.close()">×</div>
+        </div>
+    </div>
+    
+    <div class="module-content">
+        <!-- Key Metrics Grid -->
+        <div class="metric-grid">
+            <div class="metric-card">
+                <div class="metric-value" id="inference-rate">127</div>
+                <div class="metric-label">Inference/sec</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="amplification">847x</div>
+                <div class="metric-label">Amplification</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="response-time">2.3s</div>
+                <div class="metric-label">Avg Response</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="uptime">99.7%</div>
+                <div class="metric-label">Uptime</div>
+            </div>
+        </div>
+        
+        <!-- Performance Chart -->
+        <div class="chart-container">
+            <div class="chart-title">🔥 Real-time Performance</div>
+            <div class="performance-chart" id="performance-chart">
+                <canvas width="100%" height="120"></canvas>
+            </div>
+        </div>
+        
+        <!-- GPU Status -->
+        <div class="chart-container">
+            <div class="chart-title">🥷 MAGI Fleet Status</div>
+            
+            <div class="gpu-status">
+                <div class="gpu-name">Melchior (RTX A5000)</div>
+                <div class="gpu-metrics">
+                    <span id="melchior-temp">72°C</span>
+                    <span>180W / 230W</span>
+                    <span>15.2GB / 24GB</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 78%"></div>
+            </div>
+            
+            <div class="gpu-status">
+                <div class="gpu-name">Balthazar (RTX A4000)</div>
+                <div class="gpu-metrics">
+                    <span id="balthazar-temp" class="temp-high">78°C</span>
+                    <span>140W / 200W</span>
+                    <span>12.1GB / 16GB</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 76%"></div>
+            </div>
+            
+            <div class="gpu-status">
+                <div class="gpu-name">Caspar (RTX 3090)</div>
+                <div class="gpu-metrics">
+                    <span id="caspar-temp">69°C</span>
+                    <span>220W / 350W</span>
+                    <span>18.5GB / 24GB</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 77%"></div>
+            </div>
+        </div>
+        
+        <!-- Network Performance -->
+        <div class="chart-container">
+            <div class="chart-title">🌐 Network Performance</div>
+            
+            <div class="gpu-status">
+                <div class="gpu-name">10GbE Backbone</div>
+                <div class="gpu-metrics">
+                    <span>8.7 Gbps</span>
+                    <span>0.3ms latency</span>
+                    <span>99.9% uptime</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 87%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simulate real-time updates
+        function updateMetrics() {
+            // Update inference rate
+            const inference = document.getElementById('inference-rate');
+            inference.textContent = Math.floor(120 + Math.random() * 20);
+            
+            // Update amplification
+            const amp = document.getElementById('amplification');
+            amp.textContent = Math.floor(800 + Math.random() * 100) + 'x';
+            
+            // Update response time
+            const response = document.getElementById('response-time');
+            response.textContent = (2.0 + Math.random() * 0.8).toFixed(1) + 's';
+            
+            // Update GPU temperatures
+            const melchiorTemp = document.getElementById('melchior-temp');
+            const balthazarTemp = document.getElementById('balthazar-temp');
+            const casparTemp = document.getElementById('caspar-temp');
+            
+            melchiorTemp.textContent = Math.floor(70 + Math.random() * 8) + '°C';
+            balthazarTemp.textContent = Math.floor(75 + Math.random() * 8) + '°C';
+            casparTemp.textContent = Math.floor(65 + Math.random() * 8) + '°C';
+            
+            // Update temperature warning classes
+            [melchiorTemp, balthazarTemp, casparTemp].forEach(temp => {
+                const value = parseInt(temp.textContent);
+                temp.className = value > 75 ? 'temp-high' : value > 80 ? 'temp-critical' : '';
+            });
+        }
+        
+        // Update every 2 seconds
+        setInterval(updateMetrics, 2000);
+        
+        // Simple performance chart animation
+        function drawPerformanceChart() {
+            const canvas = document.querySelector('#performance-chart canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = canvas.offsetWidth;
+            canvas.height = 120;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Generate performance data
+            const dataPoints = 50;
+            const data = [];
+            for (let i = 0; i < dataPoints; i++) {
+                data.push(0.3 + Math.random() * 0.7);
+            }
+            
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Draw grid
+            ctx.strokeStyle = 'rgba(76, 175, 80, 0.2)';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i < 5; i++) {
+                const y = (height / 4) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+            
+            // Draw performance line
+            ctx.strokeStyle = '#4CAF50';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            data.forEach((value, index) => {
+                const x = (width / (dataPoints - 1)) * index;
+                const y = height - (value * height);
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+            
+            // Add glow effect
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#4CAF50';
+            ctx.stroke();
+        }
+        
+        // Initialize chart
+        setTimeout(drawPerformanceChart, 100);
+        setInterval(drawPerformanceChart, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Launch - MAGI Infrastructure Control Center</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        
+        .neural-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.5;
+            z-index: -1;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 2rem 0;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            background: linear-gradient(45deg, #4CAF50, #00BCD4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { filter: brightness(1); }
+            to { filter: brightness(1.3); }
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #00BCD4;
+            opacity: 0.8;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .status-card {
+            background: rgba(42, 42, 42, 0.9);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4CAF50, #00BCD4);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .status-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .card-icon {
+            font-size: 2rem;
+            margin-right: 1rem;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0.8rem 0;
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+        
+        .metric-value {
+            font-weight: bold;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .online { background: #4CAF50; color: white; }
+        .warning { background: #FF9800; color: white; }
+        .offline { background: #f44336; color: white; }
+        .info { background: #2196F3; color: white; }
+        
+        .control-panel {
+            background: rgba(42, 42, 42, 0.9);
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-section {
+            margin-bottom: 2rem;
+        }
+        
+        .control-section h3 {
+            color: #4CAF50;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .control-btn {
+            width: 100%;
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .control-btn.danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+        
+        .control-btn.warning {
+            background: linear-gradient(45deg, #FF9800, #f57c00);
+        }
+        
+        .network-topology {
+            grid-column: 1 / -1;
+            background: rgba(42, 42, 42, 0.9);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .topology-nodes {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+        
+        .node {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.3);
+            min-width: 120px;
+            position: relative;
+        }
+        
+        .node::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -20px;
+            width: 40px;
+            height: 2px;
+            background: #4CAF50;
+            transform: translateY(-50%);
+        }
+        
+        .node:last-child::after {
+            display: none;
+        }
+        
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .metric-card {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .metric-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: #ccc;
+            margin-top: 0.5rem;
+        }
+        
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4CAF50;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .log-stream {
+            background: #000;
+            border-radius: 8px;
+            padding: 1rem;
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+        }
+        
+        .log-entry {
+            margin: 0.2rem 0;
+            opacity: 0;
+            animation: slideIn 0.3s ease forwards;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .timestamp {
+            color: #888;
+        }
+        
+        .log-info { color: #4CAF50; }
+        .log-warning { color: #FF9800; }
+        .log-error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="neural-bg">
+        <canvas id="neuralNetwork"></canvas>
+    </div>
+    
+    <div class="header">
+        <h1>🚀 Launch Dashboard</h1>
+        <p class="subtitle">
+            <span class="live-indicator"></span>
+            MAGI Infrastructure Control Center - Live Monitoring
+        </p>
+    </div>
+    
+    <div class="main-grid">
+        <div class="dashboard-grid">
+            <!-- Hybrid Memory System -->
+            <div class="status-card">
+                <div class="card-header">
+                    <div class="card-icon">🧠</div>
+                    <div class="card-title">Hybrid Memory System</div>
+                </div>
+                <div class="metric">
+                    <span>PostgreSQL + pgvector</span>
+                    <span class="metric-value online">ONLINE</span>
+                </div>
+                <div class="metric">
+                    <span>Redis Cache</span>
+                    <span class="metric-value online">6.2GB</span>
+                </div>
+                <div class="metric">
+                    <span>Qdrant Vector DB</span>
+                    <span class="metric-value online">847K vectors</span>
+                </div>
+                <div class="metric">
+                    <span>Apache AGE Graph</span>
+                    <span class="metric-value online">ACTIVE</span>
+                </div>
+            </div>
+            
+            <!-- MAGI Fleet -->
+            <div class="status-card">
+                <div class="card-header">
+                    <div class="card-icon">🥷</div>
+                    <div class="card-title">MAGI Fleet</div>
+                </div>
+                <div class="metric">
+                    <span>Melchior (RTX A5000)</span>
+                    <span class="metric-value online">72°C</span>
+                </div>
+                <div class="metric">
+                    <span>Balthazar (RTX A4000)</span>
+                    <span class="metric-value warning">78°C</span>
+                </div>
+                <div class="metric">
+                    <span>Caspar (RTX 3090)</span>
+                    <span class="metric-value online">69°C</span>
+                </div>
+                <div class="metric">
+                    <span>10GbE Network</span>
+                    <span class="metric-value info">8.7 Gbps</span>
+                </div>
+            </div>
+            
+            <!-- AI Services -->
+            <div class="status-card">
+                <div class="card-header">
+                    <div class="card-icon">🤖</div>
+                    <div class="card-title">AI Services</div>
+                </div>
+                <div class="metric">
+                    <span>LM Studio</span>
+                    <span class="metric-value online">:1234</span>
+                </div>
+                <div class="metric">
+                    <span>ComfyUI</span>
+                    <span class="metric-value online">:8188</span>
+                </div>
+                <div class="metric">
+                    <span>VLLM Shadow Clones</span>
+                    <span class="metric-value online">3 ACTIVE</span>
+                </div>
+                <div class="metric">
+                    <span>Claude Desktop + MCPs</span>
+                    <span class="metric-value online">READY</span>
+                </div>
+            </div>
+            
+            <!-- Performance Analytics -->
+            <div class="status-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Performance Analytics</div>
+                </div>
+                <div class="performance-metrics">
+                    <div class="metric-card">
+                        <div class="metric-number">127</div>
+                        <div class="metric-label">Inference/sec</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">847x</div>
+                        <div class="metric-label">Amplification</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">2.3s</div>
+                        <div class="metric-label">Avg Response</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">99.7%</div>
+                        <div class="metric-label">Uptime</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="control-section">
+                <h3>🚀 Quick Actions</h3>
+                <button class="control-btn">Deploy Shadow Clones</button>
+                <button class="control-btn">Restart AI Services</button>
+                <button class="control-btn">Sync Memory System</button>
+                <button class="control-btn warning">Health Check All</button>
+                <button class="control-btn danger">Emergency Stop</button>
+            </div>
+            
+            <div class="control-section">
+                <h3>🔧 System Controls</h3>
+                <button class="control-btn">Update n8n Workflows</button>
+                <button class="control-btn">Backup Configurations</button>
+                <button class="control-btn">Scale VLLM Models</button>
+            </div>
+            
+            <div class="control-section">
+                <h3>📊 Live System Logs</h3>
+                <div class="log-stream" id="logStream">
+                    <div class="log-entry log-info">
+                        <span class="timestamp">[21:45:36]</span> Melchior: Llama-70B loaded successfully
+                    </div>
+                    <div class="log-entry log-info">
+                        <span class="timestamp">[21:45:38]</span> Caspar: DeepSeek-V3 inference ready
+                    </div>
+                    <div class="log-entry log-warning">
+                        <span class="timestamp">[21:45:41]</span> Balthazar: High GPU temperature detected
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Network Topology Visualization -->
+    <div class="network-topology">
+        <h3 style="color: #4CAF50; margin-bottom: 2rem; text-align: center;">
+            🌐 MAGI Network Topology
+        </h3>
+        <div class="topology-nodes">
+            <div class="node">
+                <div>🧠 Lilith</div>
+                <div style="font-size: 0.8rem; color: #ccc;">Primary AI/Dev</div>
+                <div style="font-size: 0.7rem; color: #888;">192.168.50.10</div>
+            </div>
+            <div class="node">
+                <div>🥷 Melchior</div>
+                <div style="font-size: 0.8rem; color: #ccc;">RTX A5000</div>
+                <div style="font-size: 0.7rem; color: #888;">192.168.50.30</div>
+            </div>
+            <div class="node">
+                <div>⚡ Balthazar</div>
+                <div style="font-size: 0.8rem; color: #ccc;">RTX A4000</div>
+                <div style="font-size: 0.7rem; color: #888;">192.168.50.20</div>
+            </div>
+            <div class="node">
+                <div>🔮 Caspar</div>
+                <div style="font-size: 0.8rem; color: #ccc;">RTX 3090</div>
+                <div style="font-size: 0.7rem; color: #888;">192.168.50.21</div>
+            </div>
+            <div class="node">
+                <div>💾 Adam</div>
+                <div style="font-size: 0.8rem; color: #ccc;">Business</div>
+                <div style="font-size: 0.7rem; color: #888;">192.168.50.11</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Neural network background animation
+        const canvas = document.getElementById('neuralNetwork');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        
+        const nodes = [];
+        const connections = [];
+        
+        // Create nodes
+        for (let i = 0; i < 50; i++) {
+            nodes.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5
+            });
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw nodes
+            nodes.forEach(node => {
+                node.x += node.vx;
+                node.y += node.vy;
+                
+                if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
+                if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(76, 175, 80, 0.6)';
+                ctx.fill();
+            });
+            
+            // Draw connections
+            nodes.forEach((node, i) => {
+                nodes.slice(i + 1).forEach(otherNode => {
+                    const distance = Math.sqrt(
+                        Math.pow(node.x - otherNode.x, 2) + 
+                        Math.pow(node.y - otherNode.y, 2)
+                    );
+                    
+                    if (distance < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(node.x, node.y);
+                        ctx.lineTo(otherNode.x, otherNode.y);
+                        ctx.strokeStyle = `rgba(76, 175, 80, ${0.2 * (1 - distance / 100)})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                });
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        // Simulate live log updates
+        const logStream = document.getElementById('logStream');
+        const logTypes = ['info', 'warning', 'error'];
+        const logMessages = [
+            'Memory allocation optimized: +15% efficiency',
+            'Shadow clone synchronization complete',
+            'Network throughput: 9.2 Gbps sustained',
+            'GPU temperature normalized: 71°C',
+            'New inference request processed',
+            'Backup completed successfully'
+        ];
+        
+        function addLogEntry() {
+            const now = new Date();
+            const timestamp = now.toTimeString().split(' ')[0];
+            const type = logTypes[Math.floor(Math.random() * logTypes.length)];
+            const message = logMessages[Math.floor(Math.random() * logMessages.length)];
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            
+            logStream.appendChild(entry);
+            logStream.scrollTop = logStream.scrollHeight;
+            
+            // Remove old entries to prevent memory buildup
+            if (logStream.children.length > 20) {
+                logStream.removeChild(logStream.firstChild);
+            }
+        }
+        
+        // Add new log entries every 3-8 seconds
+        setInterval(addLogEntry, Math.random() * 5000 + 3000);
+        
+        // Simulate real-time metric updates
+        function updateMetrics() {
+            // Update performance numbers with realistic variations
+            const metricNumbers = document.querySelectorAll('.metric-number');
+            metricNumbers.forEach((element, index) => {
+                const current = parseInt(element.textContent);
+                let variation;
+                
+                switch(index) {
+                    case 0: // Inference/sec
+                        variation = Math.floor(Math.random() * 20) - 10;
+                        element.textContent = Math.max(100, current + variation);
+                        break;
+                    case 1: // Amplification
+                        variation = Math.floor(Math.random() * 100) - 50;
+                        element.textContent = Math.max(500, current + variation) + 'x';
+                        break;
+                    case 2: // Response time
+                        variation = (Math.random() * 0.4) - 0.2;
+                        element.textContent = Math.max(1.0, (current + variation)).toFixed(1) + 's';
+                        break;
+                    case 3: // Uptime
+                        element.textContent = (99.5 + Math.random() * 0.5).toFixed(1) + '%';
+                        break;
+                }
+            });
+        }
+        
+        setInterval(updateMetrics, 2000);
+        
+        // Interactive control buttons
+        document.querySelectorAll('.control-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.textContent;
+                console.log(`Executing: ${action}`);
+                
+                // Simulate action feedback
+                this.style.background = '#4CAF50';
+                this.textContent = 'Executing...';
+                
+                setTimeout(() => {
+                    this.style.background = '';
+                    this.textContent = action;
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>
