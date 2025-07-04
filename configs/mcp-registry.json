@@ -1,0 +1,135 @@
+{
+  "_metadata": {
+    "version": "1.0.0",
+    "description": "MCP Registry for Launch Dashboard Integration",
+    "last_updated": "2025-07-03T19:58:41.569Z",
+    "auto_discovery": true
+  },
+  "mcps": {
+    "hybrid-memory": {
+      "name": "Hybrid Memory MCP",
+      "description": "PostgreSQL + pgvector + Apache AGE + Redis + Qdrant integration",
+      "executable": "npx",
+      "args": ["-y", "@mcp-docker/hybrid-memory"],
+      "port": null,
+      "health_check": "postgresql://localhost:5432",
+      "dependencies": ["postgresql", "redis", "qdrant"],
+      "priority": 1,
+      "category": "memory",
+      "status": "available",
+      "auto_start": true,
+      "launch_group": "core"
+    },
+    "github": {
+      "name": "GitHub MCP",
+      "description": "GitHub repository and issue management",
+      "executable": "npx",
+      "args": ["-y", "@mcp-docker/github"],
+      "port": null,
+      "health_check": "api.github.com",
+      "dependencies": ["git"],
+      "priority": 2,
+      "category": "development",
+      "status": "available",
+      "auto_start": true,
+      "launch_group": "core"
+    },
+    "docker": {
+      "name": "Docker MCP",
+      "description": "Docker container and infrastructure management",
+      "executable": "npx",
+      "args": ["-y", "@mcp-docker/docker"],
+      "port": null,
+      "health_check": "unix:///var/run/docker.sock",
+      "dependencies": ["docker"],
+      "priority": 3,
+      "category": "infrastructure",
+      "status": "available",
+      "auto_start": true,
+      "launch_group": "core"
+    },
+    "comfyui": {
+      "name": "ComfyUI MCP",
+      "description": "ComfyUI workflow and image generation management",
+      "executable": "npx",
+      "args": ["-y", "@mcp-docker/comfyui"],
+      "port": null,
+      "health_check": "http://localhost:8188",
+      "dependencies": ["comfyui"],
+      "priority": 4,
+      "category": "ai_services",
+      "status": "available",
+      "auto_start": true,
+      "launch_group": "ai"
+    },
+    "time-precision": {
+      "name": "Time Precision MCP",
+      "description": "High precision time and scheduling operations",
+      "executable": "npx",
+      "args": ["-y", "@mcp-docker/time-precision"],
+      "port": null,
+      "health_check": null,
+      "dependencies": [],
+      "priority": 5,
+      "category": "utilities",
+      "status": "available",
+      "auto_start": true,
+      "launch_group": "utilities"
+    },
+    "freshbooks-surreal": {
+      "name": "FreshBooks SurrealDB MCP",
+      "description": "FreshBooks integration with SurrealDB multi-model intelligence",
+      "executable": "npx",
+      "args": ["-y", "@mcp-docker/freshbooks-surreal"],
+      "port": null,
+      "health_check": "surrealdb://localhost:8000",
+      "dependencies": ["surrealdb"],
+      "priority": 6,
+      "category": "business",
+      "status": "available",
+      "auto_start": false,
+      "launch_group": "business"
+    },
+    "desktop-commander": {
+      "name": "Desktop Commander MCP",
+      "description": "Local file system and process management",
+      "executable": "npx",
+      "args": ["-y", "@mcp-docker/desktop-commander"],
+      "port": null,
+      "health_check": null,
+      "dependencies": [],
+      "priority": 7,
+      "category": "system",
+      "status": "available",
+      "auto_start": false,
+      "launch_group": "system"
+    }
+  },
+  "launch_groups": {
+    "core": {
+      "description": "Essential MCPs for basic MAGI operations",
+      "auto_start": true,
+      "startup_order": ["hybrid-memory", "github", "docker"]
+    },
+    "ai": {
+      "description": "AI service integration MCPs",
+      "auto_start": true,
+      "startup_order": ["comfyui"]
+    },
+    "utilities": {
+      "description": "Utility and support MCPs",
+      "auto_start": true,
+      "startup_order": ["time-precision"]
+    },
+    "business": {
+      "description": "Business process integration MCPs",
+      "auto_start": false,
+      "startup_order": ["freshbooks-surreal"]
+    },
+    "system": {
+      "description": "System-level management MCPs",
+      "auto_start": false,
+      "startup_order": ["desktop-commander"]
+    }
+  }
+}
